@@ -35,14 +35,7 @@ import static org.mockito.Mockito.when;
 import au.com.centrumsystems.hudson.plugin.buildpipeline.trigger.BuildPipelineTrigger;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import hudson.model.AbstractBuild;
-import hudson.model.Api;
-import hudson.model.FreeStyleProject;
-import hudson.model.ParametersAction;
-import hudson.model.ParametersDefinitionProperty;
-import hudson.model.StringParameterDefinition;
-import hudson.model.TopLevelItem;
-import hudson.model.User;
+import hudson.model.*;
 import hudson.plugins.parameterizedtrigger.AbstractBuildParameterFactory;
 import hudson.plugins.parameterizedtrigger.BuildTriggerConfig;
 import hudson.plugins.parameterizedtrigger.PredefinedBuildParameters;
@@ -523,6 +516,39 @@ public class DeliveryPipelineViewTest {
         assertEquals(0, pipeline.getContributors().size());
         assertEquals(1, pipeline.getStages().size());
         assertEquals(0, pipeline.getChanges().size());
+    }
+
+    @Test
+    public void testPipelineAZSorting() throws Exception {
+        FreeStyleProject a = jenkins.createFreeStyleProject("A");
+        FreeStyleProject b = jenkins.createFreeStyleProject("B");
+        FreeStyleProject c = jenkins.createFreeStyleProject("C");
+        a.addProperty(new PipelineProperty("A", "Build", null));
+        b.addProperty(new PipelineProperty("B", "Build", null));
+        c.addProperty(new PipelineProperty("C", "Build", null));
+        a.getPublishersList().add(new BuildTrigger("C,B", false));
+
+        List<DeliveryPipelineView.ComponentSpec> specs = new ArrayList<>();
+        specs.add(new DeliveryPipelineView.ComponentSpec("Comp", "A", NONE, DO_NOT_SHOW_UPSTREAM));
+
+        DeliveryPipelineView view = new DeliveryPipelineView("Pipeline");
+        view.setComponentSpecs(specs);
+
+        // Set sorting of tasks to compare names
+        view.setSorting(NameComparator.class.getName());
+
+        jenkins.getInstance().addView(view);
+        jenkins.setQuietPeriod(0);
+        jenkins.getInstance().rebuildDependencyGraph();
+        FreeStyleBuild firstBuild = jenkins.buildAndAssertSuccess(a);
+        jenkins.waitUntilNoActivity();
+
+        view.setShowChanges(false);
+        List<Component> components = view.getPipelines();
+        Pipeline pipeline = components.get(0).getPipelines().get(0);
+        Stage stage = pipeline.getStages().get(0);
+        Task task = stage.getTasks().get(1);
+        assertEquals("B", task.getName());
     }
 
     @Test
