@@ -51,6 +51,8 @@ import org.kohsuke.stapler.export.Exported;
 import se.diabol.jenkins.pipeline.domain.Component;
 import se.diabol.jenkins.pipeline.domain.Pipeline;
 import se.diabol.jenkins.pipeline.domain.PipelineException;
+import se.diabol.jenkins.pipeline.domain.Stage;
+import se.diabol.jenkins.pipeline.domain.task.Task;
 import se.diabol.jenkins.pipeline.sort.ComponentComparatorDescriptor;
 import se.diabol.jenkins.pipeline.sort.GenericComponentComparator;
 import se.diabol.jenkins.pipeline.trigger.ManualTrigger;
@@ -531,6 +533,15 @@ public class DeliveryPipelineView extends View implements PipelineView {
                     components.sort(comparatorDescriptor.createInstance());
                 }
             }
+
+            for (Component c : components) {
+                for (Pipeline p : c.getPipelines()) {
+                    for (Stage s : p.getStages()) {
+                        List<Task> tasks = s.getTasks();
+                    }
+                }
+            }
+
             if (maxNumberOfVisiblePipelines > 0) {
                 LOG.fine("Limiting number of jobs to: " + maxNumberOfVisiblePipelines);
                 components = components.subList(0, Math.min(components.size(), maxNumberOfVisiblePipelines));

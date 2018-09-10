@@ -69,6 +69,7 @@ import se.diabol.jenkins.pipeline.domain.Pipeline;
 import se.diabol.jenkins.pipeline.domain.Stage;
 import se.diabol.jenkins.pipeline.domain.task.Task;
 import se.diabol.jenkins.pipeline.sort.NameComparator;
+import se.diabol.jenkins.pipeline.sort.NameDescendingComparator;
 import se.diabol.jenkins.pipeline.trigger.TriggerException;
 
 import java.io.IOException;
@@ -535,7 +536,7 @@ public class DeliveryPipelineViewTest {
         view.setComponentSpecs(specs);
 
         // Set sorting of tasks to compare names
-        view.setSorting(NameComparator.class.getName());
+        view.setSorting(NameDescendingComparator.class.getName());
 
         jenkins.getInstance().addView(view);
         jenkins.setQuietPeriod(0);
